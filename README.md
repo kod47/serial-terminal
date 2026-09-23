@@ -38,16 +38,21 @@ It was written because the existing tools were either paid, hard to read, or lim
 
 All settings are saved automatically to `%AppData%\SerialTerminal\settings.json`.
 
-## Requirements
+## Download
 
-- Windows 10 or 11
-- [.NET 10 SDK](https://dotnet.microsoft.com/download) to build from source
+**[⬇ Download SerialTerminal.exe](https://drive.google.com/file/d/1hD2M1zEcryQRRnBcadSvXEkPlYDsIwL9/view?usp=drive_link)** (v0.1.0, Windows 10/11 x64, ~62 MB)
 
-## Build and run
+No installation needed: download the file and run it. It does not require .NET.
+
+Google Drive may warn that it cannot scan a file this large for viruses. Choose **Download anyway**. Windows SmartScreen may also warn about an unknown publisher. Click **More info → Run anyway**.
+
+## Build from source
+
+Requires the [.NET 10 SDK](https://dotnet.microsoft.com/download).
 
 ```
-git clone <repository-url>
-cd <repository-folder>
+git clone https://github.com/kod47/serial-terminal.git
+cd serial-terminal
 dotnet run
 ```
 
