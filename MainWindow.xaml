@@ -1,0 +1,173 @@
+<Window x:Class="SerialTerminal.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:SerialTerminal"
+        xmlns:core="clr-namespace:SerialTerminal.Core"
+        Title="Serial Terminal" Icon="/Assets/app.ico" Height="760" Width="1250" MinWidth="760" MinHeight="420"
+        Closing="Window_Closing">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <local:StopBitsConverter x:Key="StopBitsText"/>
+        <local:BoolToValueConverter x:Key="WrapToScrollBar"
+                                    TrueValue="{x:Static ScrollBarVisibility.Disabled}"
+                                    FalseValue="{x:Static ScrollBarVisibility.Auto}"/>
+        <local:BoolToValueConverter x:Key="WrapToTextWrapping"
+                                    TrueValue="{x:Static TextWrapping.Wrap}"
+                                    FalseValue="{x:Static TextWrapping.NoWrap}"/>
+
+        <!-- Compact terminal rows (the Fluent default item is too tall) -->
+        <Style x:Key="TerminalItem" TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Bd" Background="Transparent" Padding="8,0">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource TermSelection}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <DataTemplate x:Key="TerminalLineTemplate" DataType="{x:Type core:TerminalLine}">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Left" Text="{Binding TimeText}" Margin="0,0,12,0"
+                           Foreground="{DynamicResource TermTimestamp}"
+                           Visibility="{Binding DataContext.ShowTimestamps, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource BoolToVis}}"/>
+                <TextBlock x:Name="Txt" Text="{Binding Text}" Foreground="{DynamicResource TermRx}"
+                           TextWrapping="{Binding DataContext.WordWrap, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource WrapToTextWrapping}}"/>
+            </DockPanel>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding Kind}" Value="{x:Static core:LineKind.Tx}">
+                    <Setter TargetName="Txt" Property="Foreground" Value="{DynamicResource TermTx}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Kind}" Value="{x:Static core:LineKind.Info}">
+                    <Setter TargetName="Txt" Property="Foreground" Value="{DynamicResource TermInfo}"/>
+                    <Setter TargetName="Txt" Property="FontStyle" Value="Italic"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Kind}" Value="{x:Static core:LineKind.Error}">
+                    <Setter TargetName="Txt" Property="Foreground" Value="{DynamicResource TermError}"/>
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+    </Window.Resources>
+
+    <DockPanel>
+        <!-- Status bar -->
+        <Border DockPanel.Dock="Bottom" BorderThickness="0,1,0,0" BorderBrush="#40808080" Padding="10,4">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Content="Reset" Command="{Binding ResetCountersCommand}"
+                        Padding="8,2" Margin="8,0,0,0" ToolTip="Reset byte counters"/>
+                <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center">
+                    <Run Text="RX:"/> <Run Text="{Binding RxBytes, Mode=OneWay}"/>
+                    <Run Text="   TX:"/> <Run Text="{Binding TxBytes, Mode=OneWay}"/>
+                    <Run Text=" bytes"/>
+                </TextBlock>
+                <TextBlock DockPanel.Dock="Right" Text="{Binding LogStatus}" Margin="0,0,24,0"
+                           VerticalAlignment="Center" Foreground="{DynamicResource TermInfo}"/>
+                <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Send lines -->
+        <ItemsControl x:Name="SendLinesPanel" DockPanel.Dock="Bottom" ItemsSource="{Binding SendLines}" Margin="8,2,8,4">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type core:SendLine}">
+                    <DockPanel Margin="0,4,0,0">
+                        <Button DockPanel.Dock="Right" Content="Send" Width="90" Margin="6,0,0,0"
+                                Command="{Binding DataContext.SendCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding}"/>
+                        <ComboBox DockPanel.Dock="Right" Width="100" Margin="6,0,0,0" SelectedItem="{Binding LineEnding}"
+                                  ItemsSource="{Binding DataContext.LineEndings, RelativeSource={RelativeSource AncestorType=Window}}"
+                                  ToolTip="Line ending appended in text mode"/>
+                        <CheckBox DockPanel.Dock="Right" Content="HEX" IsChecked="{Binding IsHex}" MinWidth="0"
+                                  Margin="10,0,0,0" VerticalAlignment="Center" ToolTip="Send as hex bytes, e.g. 01 03 00 00 00 0A"/>
+                        <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
+                                 FontFamily="Cascadia Mono, Consolas" VerticalContentAlignment="Center"
+                                 PreviewKeyDown="SendBox_PreviewKeyDown"
+                                 ToolTip="Enter = send, Up/Down = history"/>
+                    </DockPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Macros -->
+        <ItemsControl DockPanel.Dock="Bottom" ItemsSource="{Binding Macros}" Margin="8,6,2,0">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Rows="1"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type core:Macro}">
+                    <Button Content="{Binding Name}" Margin="0,0,6,0" HorizontalAlignment="Stretch"
+                            Command="{Binding DataContext.SendMacroCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                            CommandParameter="{Binding}"
+                            MouseRightButtonUp="MacroButton_RightClick"
+                            ToolTip="{Binding Data}" ToolTipService.ShowOnDisabled="True"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Connection bar -->
+        <WrapPanel DockPanel.Dock="Top" Margin="8,8,8,0">
+            <ComboBox Width="330" Margin="0,0,4,6" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}"
+                      DisplayMemberPath="Display" IsEnabled="{Binding CanEditSettings}" ToolTip="Port"/>
+            <Button Content="⟳" Margin="0,0,12,6" Padding="10,4" Command="{Binding RefreshPortsCommand}" ToolTip="Refresh port list"/>
+            <ComboBox Width="120" Margin="0,0,6,6" IsEditable="True" ItemsSource="{Binding BaudRates}"
+                      Text="{Binding BaudRateText, UpdateSourceTrigger=PropertyChanged}"
+                      IsEnabled="{Binding CanEditSettings}" ToolTip="Baud rate (any value can be typed)"/>
+            <ComboBox Width="70" Margin="0,0,6,6" ItemsSource="{Binding DataBitsValues}" SelectedItem="{Binding DataBits}"
+                      IsEnabled="{Binding CanEditSettings}" ToolTip="Data bits"/>
+            <ComboBox Width="95" Margin="0,0,6,6" ItemsSource="{Binding ParityValues}" SelectedItem="{Binding Parity}"
+                      IsEnabled="{Binding CanEditSettings}" ToolTip="Parity"/>
+            <ComboBox Width="75" Margin="0,0,6,6" ItemsSource="{Binding StopBitsValues}" SelectedItem="{Binding StopBits}"
+                      IsEnabled="{Binding CanEditSettings}" ToolTip="Stop bits">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Converter={StaticResource StopBitsText}}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <ComboBox Width="170" Margin="0,0,12,6" ItemsSource="{Binding HandshakeValues}" SelectedItem="{Binding Handshake}"
+                      IsEnabled="{Binding CanEditSettings}" ToolTip="Flow control"/>
+            <Button Content="{Binding ConnectButtonText}" Command="{Binding ToggleConnectionCommand}"
+                    Style="{DynamicResource AccentButtonStyle}" Width="110" Margin="0,0,12,6"/>
+            <CheckBox Content="DTR" IsChecked="{Binding Dtr}" MinWidth="0" Margin="0,0,10,6" VerticalAlignment="Center"/>
+            <CheckBox Content="RTS" IsChecked="{Binding Rts}" MinWidth="0" Margin="0,0,10,6" VerticalAlignment="Center"/>
+            <CheckBox Content="Auto-reconnect" IsChecked="{Binding AutoReconnect}" MinWidth="0" Margin="0,0,10,6" VerticalAlignment="Center"/>
+        </WrapPanel>
+
+        <!-- View / log bar -->
+        <WrapPanel DockPanel.Dock="Top" Margin="8,0,8,6">
+            <ComboBox Width="120" Margin="0,0,10,6" ItemsSource="{Binding DisplayModes}" SelectedItem="{Binding DisplayMode}" ToolTip="Display mode"/>
+            <CheckBox Content="Timestamps" IsChecked="{Binding ShowTimestamps}" MinWidth="0" Margin="0,0,10,6" VerticalAlignment="Center"/>
+            <CheckBox Content="Word wrap" IsChecked="{Binding WordWrap}" MinWidth="0" Margin="0,0,10,6" VerticalAlignment="Center"/>
+            <CheckBox Content="Auto-scroll" IsChecked="{Binding AutoScroll}" MinWidth="0" Margin="0,0,10,6" VerticalAlignment="Center"/>
+            <CheckBox Content="Dark" IsChecked="{Binding IsDarkTheme}" MinWidth="0" Margin="0,0,16,6" VerticalAlignment="Center"/>
+            <Button Content="Clear" Command="{Binding ClearCommand}" Margin="0,0,6,6"/>
+            <Button Content="Save as..." Command="{Binding SaveAsCommand}" Margin="0,0,16,6"/>
+            <Button Content="{Binding LogButtonText}" Command="{Binding ToggleLogCommand}" Width="100" Margin="0,0,6,6"
+                    ToolTip="Write to file while monitoring"/>
+            <Button Content="Log folder..." Command="{Binding ChooseLogFolderCommand}" Margin="0,0,6,6" ToolTip="{Binding LogFolder}"/>
+            <Button Content="Open folder" Command="{Binding OpenLogFolderCommand}" Margin="0,0,6,6" ToolTip="{Binding LogFolder}"/>
+        </WrapPanel>
+
+        <!-- Terminal -->
+        <ListBox x:Name="Terminal" ItemsSource="{Binding Lines}" SelectionMode="Extended"
+                 Background="{DynamicResource TermBackground}" BorderThickness="0" Padding="0,4"
+                 FontFamily="Cascadia Mono, Consolas" FontSize="{Binding FontSize}"
+                 ItemContainerStyle="{StaticResource TerminalItem}"
+                 ItemTemplate="{StaticResource TerminalLineTemplate}"
+                 VirtualizingPanel.IsVirtualizing="True"
+                 VirtualizingPanel.VirtualizationMode="Recycling"
+                 VirtualizingPanel.ScrollUnit="Pixel"
+                 ScrollViewer.HorizontalScrollBarVisibility="{Binding WordWrap, Converter={StaticResource WrapToScrollBar}}"
+                 PreviewMouseWheel="Terminal_PreviewMouseWheel"/>
+    </DockPanel>
+</Window>

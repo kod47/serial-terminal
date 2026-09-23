@@ -1,0 +1,20 @@
+<Window x:Class="SerialTerminal.MacroEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Edit macro" Width="460" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False">
+    <StackPanel Margin="16">
+        <TextBlock Text="Button name"/>
+        <TextBox x:Name="NameBox" Margin="0,4,0,12"/>
+        <TextBlock Text="Data to send"/>
+        <TextBox x:Name="DataBox" Margin="0,4,0,12" FontFamily="Cascadia Mono, Consolas"/>
+        <CheckBox x:Name="HexBox" Content="HEX bytes (e.g. 01 03 00 00 00 0A)" Margin="0,0,0,4"/>
+        <TextBlock Text="Text macros use the line ending selected on the first send line."
+                   Opacity="0.7" TextWrapping="Wrap" Margin="0,0,0,16"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="OK" IsDefault="True" Width="90" Click="Ok_Click"
+                    Style="{DynamicResource AccentButtonStyle}"/>
+            <Button Content="Cancel" IsCancel="True" Width="90" Margin="8,0,0,0"/>
+        </StackPanel>
+    </StackPanel>
+</Window>
