@@ -4,6 +4,8 @@ A free, open-source serial port (COM) terminal for Windows. It is built for ever
 
 It was written because the existing tools were either paid, hard to read, or limited, for example by a fixed line length or by not being able to log to a file and watch the output at the same time.
 
+![Serial Terminal](docs/screenshot.png)
+
 ## Features
 
 **Display**
