@@ -22,7 +22,7 @@
   "name": "Serial Terminal",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "Windows 10, Windows 11",
-  "softwareVersion": "0.1.0",
+  "softwareVersion": "0.2.0",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "downloadUrl": "https://drive.google.com/file/d/1hD2M1zEcryQRRnBcadSvXEkPlYDsIwL9/view?usp=drive_link",
   "screenshot": "https://kod47.github.io/serial-terminal/screenshot.png",
@@ -79,6 +79,12 @@
   code, pre { font-family: "Cascadia Mono", Consolas, monospace; background: var(--code-bg); border-radius: 6px; }
   code { padding: 1px 6px; }
   pre { padding: 14px 16px; overflow-x: auto; }
+  .highlight { text-align: center; }
+  .highlight .center { max-width: 680px; margin: 0 auto 24px; color: var(--muted); }
+  .highlight img {
+    max-width: 100%; height: auto; border-radius: 10px;
+    border: 1px solid var(--border); box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+  }
   .donate { text-align: center; max-width: 640px; margin: 0 auto; }
   .donate .mail { font-size: 1.2rem; font-weight: 600; }
   footer { padding: 32px 0; text-align: center; color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--border); }
@@ -94,7 +100,7 @@
     <a class="btn primary" href="https://drive.google.com/file/d/1hD2M1zEcryQRRnBcadSvXEkPlYDsIwL9/view?usp=drive_link">⬇ Download for Windows</a>
     <a class="btn" href="https://github.com/kod47/serial-terminal">Source code on GitHub</a>
   </div>
-  <p class="meta">v0.1.0 · Windows 10/11 x64 · single .exe, no installation · MIT license</p>
+  <p class="meta">v0.2.0 · Windows 10/11 x64 · single .exe, no installation · MIT license</p>
 </header>
 
 <div class="wrap shot">
@@ -116,13 +122,29 @@
         </ul>
       </div>
       <div class="card">
-        <h3>Text and HEX</h3>
+        <h3>Text, HEX and Modbus RTU</h3>
         <ul>
-          <li>Text, Hex and Hex + ASCII modes</li>
-          <li>Packets split on idle gaps (Modbus friendly)</li>
+          <li>Text, HEX and HEX + ASCII modes</li>
+          <li>Modbus RTU frames decoded, with CRC check</li>
+          <li>Automatic CRC16 when sending HEX</li>
           <li>Control characters shown as ␀ ␛ …</li>
           <li>Buffer of 100,000 lines</li>
-          <li>Copy selected lines with Ctrl + C</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Highlight and filter</h3>
+        <ul>
+          <li>Keywords color whole lines, for example errors in red</li>
+          <li>Filter shows only matching lines</li>
+          <li>Rules apply to all tabs instantly</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Tabs and live graph</h3>
+        <ul>
+          <li>Several ports open at once, one per tab</li>
+          <li>Live graph of numbers from received lines</li>
+          <li>Auto or manual Y scale, 0 axis always visible if you want</li>
         </ul>
       </div>
       <div class="card">
@@ -147,7 +169,8 @@
         <ul>
           <li>Two independent send lines</li>
           <li>Text or HEX, line ending: None, CR, LF or CRLF</li>
-          <li>Text stays in the box after sending, with command history</li>
+          <li>Periodic sending (Repeat) for polling</li>
+          <li>Send a file with a progress bar</li>
           <li>8 configurable macro buttons</li>
         </ul>
       </div>
@@ -164,6 +187,14 @@
 </section>
 
 <section>
+  <div class="wrap highlight">
+    <h2>Keyword highlighting</h2>
+    <p class="center">Few serial terminals can do this. You set keywords and colors once, and every line that contains a keyword stands out right away. You no longer need to search through thousands of lines for an error.</p>
+    <img src="highlight-rule.png" alt="Highlight rules window: the keyword error shown in red, warn in orange, each with a Match case option" width="661" height="449">
+  </div>
+</section>
+
+<section class="alt">
   <div class="wrap steps">
     <h2>Getting started</h2>
     <ol>
@@ -178,7 +209,7 @@ dotnet run</pre>
   </div>
 </section>
 
-<section class="alt">
+<section>
   <div class="wrap donate">
     <h2>Support the project</h2>
     <p>Serial Terminal is free. If it saves you time and you would like to support further development, you can donate via PayPal to:</p>

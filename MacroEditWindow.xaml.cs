@@ -14,6 +14,7 @@ public partial class MacroEditWindow : Window
         NameBox.Text = macro.Name;
         DataBox.Text = macro.Data;
         HexBox.IsChecked = macro.IsHex;
+        CrcBox.IsChecked = macro.AppendCrc;
         Loaded += (_, _) => DataBox.Focus();
     }
 
@@ -36,6 +37,7 @@ public partial class MacroEditWindow : Window
         _macro.Name = string.IsNullOrWhiteSpace(NameBox.Text) ? _macro.Name : NameBox.Text.Trim();
         _macro.Data = DataBox.Text;
         _macro.IsHex = hex;
+        _macro.AppendCrc = hex && CrcBox.IsChecked == true;
         DialogResult = true;
     }
 }

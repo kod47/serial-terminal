@@ -9,6 +9,8 @@
         <TextBlock Text="Data to send"/>
         <TextBox x:Name="DataBox" Margin="0,4,0,12" FontFamily="Cascadia Mono, Consolas"/>
         <CheckBox x:Name="HexBox" Content="HEX bytes (e.g. 01 03 00 00 00 0A)" Margin="0,0,0,4"/>
+        <CheckBox x:Name="CrcBox" Content="Append Modbus CRC16 (HEX only)" Margin="0,0,0,4"
+                  IsEnabled="{Binding IsChecked, ElementName=HexBox}"/>
         <TextBlock Text="Text macros use the line ending selected on the first send line."
                    Opacity="0.7" TextWrapping="Wrap" Margin="0,0,0,16"/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">

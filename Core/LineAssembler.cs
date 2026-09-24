@@ -15,7 +15,11 @@ public sealed class LineAssembler
     private DisplayMode _mode = DisplayMode.Text;
 
     public int HexBytesPerLine { get; set; } = 16;
+    public int MaxPacketBytes { get; set; } = 256;
     public TimeSpan PacketGap { get; set; } = TimeSpan.FromMilliseconds(20);
+
+    /// <summary>The line that is still receiving data, if any.</summary>
+    public TerminalLine? OpenLine => _open;
 
     /// <summary>A new line was created (it may still grow).</summary>
     public event Action<TerminalLine>? LineStarted;
@@ -64,7 +68,7 @@ public sealed class LineAssembler
             {
                 EnsureOpen(kind, time);
                 _bytes.Add(b);
-                if (_bytes.Count >= HexBytesPerLine) Close();
+                if (_bytes.Count >= (_mode == DisplayMode.ModbusRtu ? MaxPacketBytes : HexBytesPerLine)) Close();
             }
         }
 
@@ -83,7 +87,7 @@ public sealed class LineAssembler
     public void Close()
     {
         if (_open == null) return;
-        _open.Text = Render();
+        _open.Text = Render(final: true);
         var line = _open;
         _open = null;
         LineCompleted?.Invoke(line);
@@ -101,13 +105,20 @@ public sealed class LineAssembler
         LineStarted?.Invoke(_open);
     }
 
-    private string Render()
+    private string Render(bool final = false)
     {
         if (_mode == DisplayMode.Text) return _text.ToString();
 
-        var sb = new StringBuilder(HexBytesPerLine * 4 + 2);
+        var sb = new StringBuilder(_bytes.Count * 3 + 64);
         foreach (var b in _bytes) sb.Append(b.ToString("X2")).Append(' ');
         if (_mode == DisplayMode.Hex) return sb.ToString().TrimEnd();
+
+        if (_mode == DisplayMode.ModbusRtu)
+        {
+            // decode only a complete frame
+            if (final && _open != null) sb.Append("  ").Append(ModbusRtu.Describe(_bytes.ToArray(), _open.Kind));
+            return sb.ToString().TrimEnd();
+        }
 
         sb.Append(' ', (HexBytesPerLine - _bytes.Count) * 3 + 1);
         foreach (var b in _bytes) sb.Append(b is >= 0x20 and < 0x7F ? (char)b : '.');

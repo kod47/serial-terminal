@@ -1,10 +1,11 @@
 using System.ComponentModel;
+using System.Windows.Media;
 
 namespace SerialTerminal.Core;
 
 public enum LineKind { Rx, Tx, Info, Error }
 
-public enum DisplayMode { Text, Hex, HexAscii }
+public enum DisplayMode { Text, Hex, HexAscii, ModbusRtu }
 
 public enum LineEnding { None, CR, LF, CRLF }
 
@@ -12,6 +13,7 @@ public enum LineEnding { None, CR, LF, CRLF }
 public sealed class TerminalLine : INotifyPropertyChanged
 {
     private string _text = "";
+    private Brush? _highlight;
 
     public TerminalLine(LineKind kind, DateTime time)
     {
@@ -31,6 +33,18 @@ public sealed class TerminalLine : INotifyPropertyChanged
             if (_text == value) return;
             _text = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Text)));
+        }
+    }
+
+    /// <summary>Color from a matching highlight rule, or null.</summary>
+    public Brush? Highlight
+    {
+        get => _highlight;
+        set
+        {
+            if (ReferenceEquals(_highlight, value)) return;
+            _highlight = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Highlight)));
         }
     }
 
