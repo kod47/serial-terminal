@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Serial Terminal – free COM port terminal for Windows</title>
+<meta name="description" content="Free, open-source serial port (COM) terminal for Windows. Readable display, HEX mode, timestamps, logging to file while monitoring, macros, auto-reconnect. For STM32, Arduino, ESP32, Modbus. A free alternative to RealTerm and Termite.">
+<meta name="keywords" content="serial terminal, COM port terminal, serial monitor, UART terminal, RS232, RS485, STM32, Arduino, ESP32, Modbus, HEX terminal, RealTerm alternative, Termite alternative, Windows">
+<link rel="canonical" href="https://kod47.github.io/serial-terminal/">
+<link rel="icon" type="image/png" href="icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Serial Terminal – free COM port terminal for Windows">
+<meta property="og:description" content="Readable display, HEX mode, logging while monitoring, macros, auto-reconnect. Free and open source.">
+<meta property="og:url" content="https://kod47.github.io/serial-terminal/">
+<meta property="og:image" content="https://kod47.github.io/serial-terminal/screenshot.png">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Serial Terminal",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Windows 10, Windows 11",
+  "softwareVersion": "0.1.0",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "downloadUrl": "https://drive.google.com/file/d/1hD2M1zEcryQRRnBcadSvXEkPlYDsIwL9/view?usp=drive_link",
+  "screenshot": "https://kod47.github.io/serial-terminal/screenshot.png",
+  "license": "https://opensource.org/licenses/MIT",
+  "codeRepository": "https://github.com/kod47/serial-terminal",
+  "description": "Free, open-source serial port (COM) terminal for Windows with readable display, HEX mode, logging while monitoring, macros and auto-reconnect."
+}
+</script>
+<style>
+  :root {
+    --bg: #ffffff; --bg-alt: #f5f7fa; --text: #1b1f24; --muted: #5b6470;
+    --accent: #0a66c2; --accent-text: #ffffff; --border: #e1e5ea; --code-bg: #eef1f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14181e; --bg-alt: #1b2028; --text: #e6e9ed; --muted: #9aa4b0;
+      --accent: #4fc1ff; --accent-text: #0b1520; --border: #2a313b; --code-bg: #232a34;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.6 "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+  a { color: var(--accent); }
+  header { padding: 56px 0 32px; text-align: center; }
+  header img.logo { width: 88px; height: 88px; }
+  h1 { font-size: clamp(2rem, 5vw, 2.8rem); margin: 12px 0 8px; letter-spacing: -0.02em; }
+  .lead { font-size: 1.15rem; color: var(--muted); max-width: 680px; margin: 0 auto 28px; }
+  .buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-block; padding: 12px 22px; border-radius: 8px; font-weight: 600;
+    text-decoration: none; border: 1px solid var(--border); color: var(--text); background: var(--bg-alt);
+  }
+  .btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  .meta { color: var(--muted); font-size: 0.9rem; margin-top: 12px; }
+  .shot { margin: 16px auto 56px; }
+  .shot img {
+    width: 100%; height: auto; display: block; border-radius: 10px;
+    border: 1px solid var(--border); box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+  }
+  section { padding: 48px 0; }
+  section.alt { background: var(--bg-alt); }
+  h2 { font-size: 1.7rem; margin: 0 0 24px; text-align: center; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+  .card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  section:not(.alt) .card { background: var(--bg-alt); }
+  .card h3 { margin: 0 0 8px; font-size: 1.1rem; }
+  .card ul { margin: 0; padding-left: 18px; color: var(--muted); }
+  .card li { margin: 4px 0; }
+  .steps { max-width: 720px; margin: 0 auto; }
+  .steps li { margin: 8px 0; }
+  code, pre { font-family: "Cascadia Mono", Consolas, monospace; background: var(--code-bg); border-radius: 6px; }
+  code { padding: 1px 6px; }
+  pre { padding: 14px 16px; overflow-x: auto; }
+  .donate { text-align: center; max-width: 640px; margin: 0 auto; }
+  .donate .mail { font-size: 1.2rem; font-weight: 600; }
+  footer { padding: 32px 0; text-align: center; color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <img class="logo" src="icon.png" alt="Serial Terminal icon">
+  <h1>Serial Terminal</h1>
+  <p class="lead">A free, open-source COM port terminal for Windows. Readable output, HEX mode, and logging to a file while you keep monitoring. Made for working with STM32, Arduino, ESP32 and Modbus devices.</p>
+  <div class="buttons">
+    <a class="btn primary" href="https://drive.google.com/file/d/1hD2M1zEcryQRRnBcadSvXEkPlYDsIwL9/view?usp=drive_link">⬇ Download for Windows</a>
+    <a class="btn" href="https://github.com/kod47/serial-terminal">Source code on GitHub</a>
+  </div>
+  <p class="meta">v0.1.0 · Windows 10/11 x64 · single .exe, no installation · MIT license</p>
+</header>
+
+<div class="wrap shot">
+  <img src="screenshot.png" alt="Serial Terminal main window: port settings, terminal output, macro buttons and two send lines" width="1236" height="750">
+</div>
+
+<section class="alt">
+  <div class="wrap">
+    <h2>Features</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Readable display</h3>
+        <ul>
+          <li>No line-length limit, optional word wrap</li>
+          <li>Large monospace font, Ctrl + wheel zoom</li>
+          <li>Dark and light themes</li>
+          <li>Separate colors for RX, TX, info and errors</li>
+          <li>Timestamps with millisecond precision</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Text and HEX</h3>
+        <ul>
+          <li>Text, Hex and Hex + ASCII modes</li>
+          <li>Packets split on idle gaps (Modbus friendly)</li>
+          <li>Control characters shown as ␀ ␛ …</li>
+          <li>Buffer of 100,000 lines</li>
+          <li>Copy selected lines with Ctrl + C</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Logging</h3>
+        <ul>
+          <li>Log to a file <em>while</em> monitoring</li>
+          <li>Automatic file names per port and time</li>
+          <li>Save everything on screen with one click</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Connection</h3>
+        <ul>
+          <li>Port list with device names, updated live</li>
+          <li>Any baud rate, parity, stop bits, flow control</li>
+          <li>Manual DTR / RTS control</li>
+          <li>Auto-reconnect after reset or unplug</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Sending</h3>
+        <ul>
+          <li>Two independent send lines</li>
+          <li>Text or HEX, line ending: None, CR, LF or CRLF</li>
+          <li>Text stays in the box after sending, with command history</li>
+          <li>8 configurable macro buttons</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Free and open</h3>
+        <ul>
+          <li>No ads, no trial, no registration</li>
+          <li>MIT license: use it anywhere</li>
+          <li>Settings saved automatically</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap steps">
+    <h2>Getting started</h2>
+    <ol>
+      <li><a href="https://drive.google.com/file/d/1hD2M1zEcryQRRnBcadSvXEkPlYDsIwL9/view?usp=drive_link">Download <code>SerialTerminal.exe</code></a> (~62 MB). If Google Drive says it can't scan the file for viruses, choose <strong>Download anyway</strong>.</li>
+      <li>Run it. You don't need to install it or .NET. If Windows SmartScreen warns about an unknown publisher, click <strong>More info → Run anyway</strong>.</li>
+      <li>Select the port and baud rate, then click <strong>Connect</strong>.</li>
+    </ol>
+    <p>You can also build it from source with the <a href="https://dotnet.microsoft.com/download">.NET 10 SDK</a>:</p>
+    <pre>git clone https://github.com/kod47/serial-terminal.git
+cd serial-terminal
+dotnet run</pre>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap donate">
+    <h2>Support the project</h2>
+    <p>Serial Terminal is free. If it saves you time and you would like to support further development, you can donate via PayPal to:</p>
+    <p class="mail">kod447@gmail.com</p>
+    <p>Bug reports and ideas are welcome on <a href="https://github.com/kod47/serial-terminal/issues">GitHub Issues</a>.</p>
+  </div>
+</section>
+
+<footer>
+  Serial Terminal · MIT License · <a href="https://github.com/kod47/serial-terminal">github.com/kod47/serial-terminal</a>
+</footer>
+
+</body>
+</html>
