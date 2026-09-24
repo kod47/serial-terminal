@@ -78,11 +78,13 @@ Few serial terminals can do this. You set keywords and colors once, and every re
 
 ## Download
 
-**[⬇ Download SerialTerminal.exe](https://drive.google.com/file/d/1hD2M1zEcryQRRnBcadSvXEkPlYDsIwL9/view?usp=drive_link)** (v0.2.0, Windows 10/11 x64, ~62 MB)
+**[⬇ Download SerialTerminal.exe](https://github.com/kod47/serial-terminal/releases/latest/download/SerialTerminal.exe)** (v0.2.0, Windows 10/11 x64, ~62 MB)
 
 No installation needed: download the file and run it. It does not require .NET.
 
-Google Drive may warn that it cannot scan a file this large for viruses. Choose **Download anyway**. Windows SmartScreen may also warn about an unknown publisher. Click **More info → Run anyway**.
+Windows SmartScreen may warn about an unknown publisher. Click **More info → Run anyway**.
+
+Release notes and older versions are on the [Releases page](https://github.com/kod47/serial-terminal/releases).
 
 ## Build from source
 
