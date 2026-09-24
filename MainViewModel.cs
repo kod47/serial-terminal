@@ -249,7 +249,7 @@ public partial class MainViewModel : ObservableObject
         MessageBox.Show(Application.Current.MainWindow,
             $"Serial Terminal {Version}\n\n" +
             "Free, open-source serial port terminal for Windows.\n" +
-            "https://kod447.github.io/serial-terminal/\n\n" +
+            "https://kod47.github.io/serial-terminal/\n\n" +
             "If it saves you time, you can support development via PayPal:\nkod447@gmail.com",
             "About Serial Terminal", MessageBoxButton.OK, MessageBoxImage.Information);
     }

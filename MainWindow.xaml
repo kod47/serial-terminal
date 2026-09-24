@@ -116,7 +116,7 @@
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="Project _website" Command="{Binding OpenUrlCommand}"
-                          CommandParameter="https://kod447.github.io/serial-terminal/"/>
+                          CommandParameter="https://kod47.github.io/serial-terminal/"/>
                 <MenuItem Header="Source code and _issues (GitHub)" Command="{Binding OpenUrlCommand}"
                           CommandParameter="https://github.com/kod47/serial-terminal"/>
                 <Separator/>
