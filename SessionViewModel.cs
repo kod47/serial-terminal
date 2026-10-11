@@ -62,6 +62,7 @@ public partial class SessionViewModel : ObservableObject
 
         _connection.DataReceived += (data, time) => _incoming.Enqueue((LineKind.Rx, data, time));
         _connection.ConnectionLost += ex => Application.Current.Dispatcher.BeginInvoke(() => OnConnectionLost(ex.Message));
+        _connection.LineError += error => Application.Current.Dispatcher.BeginInvoke(() => OnLineError(error));
 
         SelectPreferredPort();
         UpdateStatus();
@@ -236,6 +237,25 @@ public partial class SessionViewModel : ObservableObject
         IsWaitingReconnect = AutoReconnect;
         AddMessage(LineKind.Error, $"Connection lost: {reason}" + (AutoReconnect ? " — waiting for port..." : ""));
         UpdateStatus();
+    }
+
+    private long _lastLineErrorMs;
+
+    private void OnLineError(SerialError error)
+    {
+        // at most one message per second, errors often come in bursts
+        long now = Environment.TickCount64;
+        if (now - _lastLineErrorMs < 1000) return;
+        _lastLineErrorMs = now;
+        AddMessage(LineKind.Error, error switch
+        {
+            SerialError.Frame => "Line error: framing (check baud rate, data bits and stop bits)",
+            SerialError.RXParity => "Line error: parity (check the parity setting)",
+            SerialError.Overrun => "Line error: overrun, some received bytes were lost",
+            SerialError.RXOver => "Line error: receive buffer overflow",
+            SerialError.TXFull => "Line error: transmit buffer full",
+            _ => $"Line error: {error}",
+        });
     }
 
     private void TryReconnect()

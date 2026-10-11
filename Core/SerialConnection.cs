@@ -34,6 +34,9 @@ public sealed class SerialConnection : IDisposable
     /// <summary>Raised on a background thread when the port fails (e.g. USB unplugged).</summary>
     public event Action<Exception>? ConnectionLost;
 
+    /// <summary>Raised on a background thread for framing/parity/overrun errors.</summary>
+    public event Action<SerialError>? LineError;
+
     public bool IsOpen => _port?.IsOpen == true;
 
     public void Open(PortSettings s)
@@ -43,6 +46,9 @@ public sealed class SerialConnection : IDisposable
         {
             Handshake = s.Handshake,
             ReadBufferSize = 65536,
+            // Must be finite: with an infinite timeout the CH340 driver aborts every read.
+            // A read still returns as soon as the first byte arrives.
+            ReadTimeout = 100,
             WriteTimeout = 1000,
         };
         try
@@ -57,10 +63,14 @@ public sealed class SerialConnection : IDisposable
             throw;
         }
 
+        port.ErrorReceived += (_, e) => LineError?.Invoke(e.EventType);
         _port = port;
         _cts = new CancellationTokenSource();
         var token = _cts.Token;
-        _ = Task.Run(() => ReadLoop(port, token));
+
+        // A dedicated thread that lives as long as the port is open: Windows cancels pending
+        // reads when the issuing thread exits, which happened with thread-pool threads.
+        new Thread(() => ReadLoop(port, token)) { IsBackground = true, Name = $"{s.PortName} reader" }.Start();
     }
 
     public void Close()
@@ -89,22 +99,66 @@ public sealed class SerialConnection : IDisposable
         if (_port != null) _port.RtsEnable = value;
     }
 
-    private async Task ReadLoop(SerialPort port, CancellationToken token)
+    private void ReadLoop(SerialPort port, CancellationToken token)
     {
+        const int maxAbortsPerSecond = 50;
         var buffer = new byte[4096];
-        try
+        long windowStart = Environment.TickCount64;
+        int aborts = 0;
+
+        while (!token.IsCancellationRequested)
         {
-            while (!token.IsCancellationRequested)
+            try
             {
-                int n = await port.BaseStream.ReadAsync(buffer, token);
+                // returns as soon as at least one byte arrives, or throws TimeoutException
+                int n = port.Read(buffer, 0, buffer.Length);
                 if (n > 0) DataReceived?.Invoke(buffer[..n], DateTime.Now);
             }
-        }
-        catch (Exception ex)
-        {
-            if (!token.IsCancellationRequested) ConnectionLost?.Invoke(ex);
+            catch (Exception) when (token.IsCancellationRequested)
+            {
+                return; // closed by us
+            }
+            catch (TimeoutException)
+            {
+                // no data within ReadTimeout - normal, read again
+            }
+            catch (IOException ex)
+            {
+                // Some drivers abort a pending read (e.g. after a framing/parity/overrun error)
+                // while the port is still fine: clear the error state and keep reading.
+                // The error code varies between drivers, so only "port gone" or a flood counts as lost.
+                long now = Environment.TickCount64;
+                if (now - windowStart > 1000)
+                {
+                    windowStart = now;
+                    aborts = 0;
+                }
+                if (++aborts > maxAbortsPerSecond || !IsPresent(port))
+                {
+                    ConnectionLost?.Invoke(ex);
+                    return;
+                }
+                try
+                {
+                    _ = port.BytesToRead; // calls ClearCommError
+                }
+                catch (Exception clearEx)
+                {
+                    ConnectionLost?.Invoke(clearEx);
+                    return;
+                }
+                Thread.Sleep(5);
+            }
+            catch (Exception ex)
+            {
+                ConnectionLost?.Invoke(ex);
+                return;
+            }
         }
     }
+
+    private static bool IsPresent(SerialPort port) =>
+        port.IsOpen && SerialPort.GetPortNames().Contains(port.PortName, StringComparer.OrdinalIgnoreCase);
 
     public void Dispose() => Close();
 }

@@ -78,7 +78,7 @@ Few serial terminals can do this. You set keywords and colors once, and every re
 
 ## Download
 
-**[⬇ Download SerialTerminal.exe](https://github.com/kod47/serial-terminal/releases/latest/download/SerialTerminal.exe)** (v0.2.0, Windows 10/11 x64, ~62 MB)
+**[⬇ Download SerialTerminal.exe](https://github.com/kod47/serial-terminal/releases/latest/download/SerialTerminal.exe)** (v0.2.1, Windows 10/11 x64, ~62 MB)
 
 No installation needed: download the file and run it. It does not require .NET.
 
